@@ -1,0 +1,71 @@
+# Metrics Summary and Data Endpoints
+# Base URL: http://localhost:8000/api/v1
+# Requires: Bearer token authentication
+
+@access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NjM3NTM0MzIsInN1YiI6IjFhOTYwZjYyLTdmZjctNDhiNC1hMTdhLWE2MGM3OGZkMjgxNCJ9.wXB70b9T5Zi5rMJ0oo2sZuYtPPibF3JmeyrygrRvbWc
+@user_id=1a960f62-7ff7-48b4-a17a-a60c78fd2814
+
+### Get Metrics Summary
+# Get aggregated metrics summary for a user with specific metric type and period
+GET http://localhost:8000/api/v1/users/{{user_id}}/metrics/summary?metric_type=heart_rate&period=week
+Authorization: Bearer {{access_token}}
+
+### Get Metrics Data
+# Get raw metric data for a user filtered by metric type
+GET http://localhost:8000/api/v1/users/{{user_id}}/metrics/data?metric_type=heart_rate
+Authorization: Bearer {{access_token}}
+
+### Get Metrics Summary - Different Periods
+# Test different aggregation periods (HOURLY, DAILY, WEEKLY, MONTHLY)
+GET http://localhost:8000/api/v1/users/{{user_id}}/metrics/summary?metric_type=steps&period=week
+Authorization: Bearer {{access_token}}
+
+### Get Metrics Summary - Different Metric Types
+# Test different metric types (HEART_RATE, STEPS, CALORIES, etc.)
+GET http://localhost:8000/api/v1/users/{{user_id}}/metrics/summary?metric_type=CALORIES&period=DAILY
+Authorization: Bearer {{access_token}}
+
+### Get Metrics Data - Different Metric Types
+# Get raw data for different metric types
+GET http://localhost:8000/api/v1/users/{{user_id}}/metrics/data?metric_type=STEPS
+Authorization: Bearer {{access_token}}
+
+### Get Metrics Summary - Invalid User ID
+# Test accessing summary for non-existent user
+GET http://localhost:8000/api/v1/users/00000000-0000-0000-0000-000000000000/metrics/summary?metric_type=HEART_RATE&period=DAILY
+Authorization: Bearer {{access_token}}
+
+### Get Metrics Summary - Unauthorized Access
+# Test accessing another user's metrics summary
+GET http://localhost:8000/api/v1/users/{{other_user_id}}/metrics/summary?metric_type=HEART_RATE&period=DAILY
+Authorization: Bearer {{access_token}}
+
+### Get Metrics Data - Unauthorized Access
+# Test accessing another user's metrics data
+GET http://localhost:8000/api/v1/users/{{other_user_id}}/metrics/data?metric_type=HEART_RATE
+Authorization: Bearer {{access_token}}
+
+### Get Metrics Summary - Missing Parameters
+# Test missing required query parameters
+GET http://localhost:8000/api/v1/users/{{user_id}}/metrics/summary
+Authorization: Bearer {{access_token}}
+
+### Get Metrics Data - Missing Parameters
+# Test missing required query parameters
+GET http://localhost:8000/api/v1/users/{{user_id}}/metrics/data
+Authorization: Bearer {{access_token}}
+
+### Get Metrics Summary - Invalid Metric Type
+# Test with invalid metric type
+GET http://localhost:8000/api/v1/users/{{user_id}}/metrics/summary?metric_type=INVALID_TYPE&period=DAILY
+Authorization: Bearer {{access_token}}
+
+### Get Metrics Summary - Invalid Period
+# Test with invalid aggregation period
+GET http://localhost:8000/api/v1/users/{{user_id}}/metrics/summary?metric_type=HEART_RATE&period=INVALID_PERIOD
+Authorization: Bearer {{access_token}}
+
+### Get Metrics Summary - Admin Access
+# Test admin accessing any user's metrics summary
+GET http://localhost:8000/api/v1/users/{{user_id}}/metrics/summary?metric_type=HEART_RATE&period=DAILY
+Authorization: Bearer {{admin_token}}

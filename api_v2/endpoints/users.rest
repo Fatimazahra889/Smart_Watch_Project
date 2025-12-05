@@ -1,0 +1,158 @@
+# User Management Endpoints
+# Base URL: http://localhost:8002/api/v1
+# Note: Different authentication requirements for different endpoints
+@admin_token = 
+@access_token =eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NjM3NDk5MzIsInN1YiI6IjFhOTYwZjYyLTdmZjctNDhiNC1hMTdhLWE2MGM3OGZkMjgxNCJ9.0hzLamYiB4WnxdbdjN9Un2vhq-2KYqgoHtx00CpKSvQ
+### Create User (No Authentication Required)
+# Register a new user account
+POST http://localhost:8000/api/v1/users
+Content-Type: application/json
+
+{
+  "email": "alice@example.com",
+  "password": "secret123",
+  "name": "Alice Example"
+}
+
+###
+GET http://localhost:8000/api/v1/users/me
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+### Get All Users (Admin Only)
+# Retrieve all users (admin access required)
+GET http://localhost:8000/api/v1/users/?skip=0&limit=100
+Authorization: Bearer {{admin_token}}
+
+### Get User by ID
+# Get a specific user by their UUID
+GET http://localhost:8000/api/v1/users/{{user_id}}
+Authorization: Bearer {{access_token}}
+
+### Update User
+# Update user information (partial update supported)
+PUT http://localhost:8000/api/v1/users/{{user_id}}
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+{
+  "full_name": "Alice Updated Name",
+  "email": "alice.updated@example.com"
+}
+
+### Delete User
+# Delete a user account (soft delete)
+DELETE http://localhost:8000/api/v1/users/{{user_id}}
+Authorization: Bearer {{access_token}}
+
+### Verify Email (No Authentication Required)
+# Verify user email with 6-digit code
+POST http://localhost:8000/api/v1/users/verify-email
+Content-Type: application/json
+
+{
+  "email": "alice@example.com",
+  "code": "123456"
+}
+
+### Forgot Password (No Authentication Required)
+# Initiate password reset process
+POST http://localhost:8000/api/v1/users/forgot-password
+Content-Type: application/json
+
+{
+  "email": "alice@example.com"
+}
+
+### Reset Password (No Authentication Required)
+# Reset password with 6-digit code
+POST http://localhost:8000/api/v1/users/reset-password
+Content-Type: application/json
+
+{
+  "email": "alice@example.com",
+  "code": "123456",
+  "new_password": "newsecret123"
+}
+
+### Resend Verification (No Authentication Required)
+# Resend email verification code for unverified user
+POST http://localhost:8000/api/v1/users/resend-verification
+Content-Type: application/json
+
+{
+  "email": "alice@example.com"
+}
+
+### Create User - Invalid Data
+# Test user registration with invalid data
+POST http://localhost:8000/api/v1/users/
+Content-Type: application/json
+
+{
+  "email": "invalid-email",
+  "password": "short",
+  "full_name": ""
+}
+
+### Create User - Duplicate Email
+# Test user registration with existing email
+POST http://localhost:8000/api/v1/users/
+Content-Type: application/json
+
+{
+  "email": "alice@example.com",
+  "password": "anotherpassword",
+  "full_name": "Another Alice"
+}
+
+### Get Users - Unauthorized (Non-admin)
+# Test accessing users list without admin privileges
+GET http://localhost:8000/api/v1/users/
+Authorization: Bearer {{access_token}}
+
+### Get User - Unauthorized Access
+# Test accessing another user's profile
+GET http://localhost:8000/api/v1/users/{{other_user_id}}
+Authorization: Bearer {{access_token}}
+
+### Update User - Unauthorized Access
+# Test updating another user's profile
+PUT http://localhost:8000/api/v1/users/{{other_user_id}}
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+{
+  "full_name": "Unauthorized Update"
+}
+
+### Delete User - Unauthorized Access
+# Test deleting another user's account
+DELETE http://localhost:8000/api/v1/users/{{other_user_id}}
+Authorization: Bearer {{access_token}}
+
+### Verify Email - Invalid Code
+# Test email verification with invalid code
+POST http://localhost:8000/api/v1/users/verify-email
+Content-Type: application/json
+
+{
+  "email": "alice@example.com",
+  "code": "999999"
+}
+
+### Reset Password - Invalid Code
+# Test password reset with invalid code
+POST http://localhost:8000/api/v1/users/reset-password
+Content-Type: application/json
+
+{
+  "email": "alice@example.com",
+  "code": "999999",
+  "new_password": "newpassword123"
+}
+
+### Get User - Non-existent ID
+# Test getting a user that doesn't exist
+GET http://localhost:8000/api/v1/users/00000000-0000-0000-0000-000000000000
+Authorization: Bearer {{access_token}}

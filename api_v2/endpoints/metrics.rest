@@ -1,0 +1,447 @@
+# Metrics Management Endpoints
+# Base URL: http://localhost:8000/api/v1
+# Note: Different authentication types for different endpoints
+# 
+# SETUP INSTRUCTIONS:
+# 1. First run: auth.rest → POST /api/v1/token with verified user credentials
+# 2. Copy the returned access_token to @access_token below
+# 3. Get admin_token by logging in with an admin user
+# 4. device_token is pre-configured for device authentication
+#
+# AUTHENTICATION REQUIREMENTS:
+# - Users must have verified email addresses (email_verified_at not null)
+# - Admin endpoints require is_admin=true user accounts
+# - Device endpoints use X-API-KEY header with device token
+
+@admin_token = 
+@access_token =eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NjM5MjM5MzksInN1YiI6IjlhYWVjMzRjLWVkMWYtNDNkNi05YTFmLTc4MTk5ZTA1NDIyNyIsImp0aSI6IjZhZWMzYjE2LTM5NmMtNDA0OC05MTkxLTYyZDBkZWI2ZjgzZiJ9.TLNz3Txx4XdXDhU3h3EBw6AJRjpJ73h3EUMdDpCm0oY
+@device_token=5777a3ec-896d-45d2-a859-76b0bb9066a6
+
+### Create Metrics Batch (User Authentication)
+# Submit a batch of metrics for a user's device using Bearer token
+POST http://localhost:8000/api/v1/metrics/batch/
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+{
+  "metrics": [
+    {
+      "metric_type": "heart_rate",
+      "value": 72,
+      "timestamp": "2025-11-12T12:00:00Z",
+      "unit": "bpm",
+      "sensor_model": "_"
+    },
+    {
+      "metric_type": "spo2",
+      "value": 98.5,
+      "timestamp": "2025-11-12T12:05:00Z",
+      "unit": "%",
+      "sensor_model": "_"
+    },
+    {
+      "metric_type": "steps",
+      "value": 32,
+      "timestamp": "2025-11-12T12:05:00Z",
+      "unit": "steps/h",
+      "sensor_model": "_"
+    },
+    {
+      "metric_type": "sleep",
+      "value": 2,
+      "timestamp": "2025-11-12T12:05:00Z",
+      "unit": "h",
+      "sensor_model": "_"
+    }
+  ]
+}
+
+
+### Get All Metrics (Admin Only)
+# Retrieve all metrics with filtering options (admin access required)
+# Query Parameters:
+# - metric_type: Filter by metric type (heart_rate, spo2, steps, sleep, temperature)
+# - start_date: Filter metrics from this date (ISO format)
+# - end_date: Filter metrics until this date (ISO format)
+# - skip: Number of records to skip (pagination)
+# - limit: Maximum number of records to return (pagination)
+GET http://localhost:8000/api/v1/metrics/?metric_type=heart_rate&start_date=2025-11-20T00:00:00Z&end_date=2025-11-23T23:59:59Z&skip=0&limit=100
+Authorization: Bearer {{access_token}}
+
+### Get Metric by ID
+# Get a specific metric by its UUID
+GET http://localhost:8000/api/v1/metrics/09486832-ea3b-400d-b93f-705277874c8c
+Authorization: Bearer {{access_token}}
+
+### Delete Metric (Admin Only)
+# Delete a metric (admin access required)
+DELETE http://localhost:8000/api/v1/metrics/09486832-ea3b-400d-b93f-705277874c8c
+Authorization: Bearer {{admin_token}}
+
+### Create Metrics Batch - Single Metric
+# Submit a single metric
+POST http://localhost:8000/api/v1/metrics/batch/
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+{
+  "metrics": [
+    {
+      "metric_type": "heart_rate",
+      "value": 65,
+      "timestamp": "2025-11-12T13:00:00Z",
+      "unit": "bpm",
+      "sensor_model": "MAX30102"
+    }
+  ]
+}
+
+### Create Metrics Batch - Invalid Data
+# Test submitting metrics with invalid data
+POST http://localhost:8000/api/v1/metrics/batch/
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+{
+  "metrics": [
+    {
+      "metric_type": "INVALID_TYPE",
+      "value": -1,
+      "timestamp": "invalid-date",
+      "unit": "bpm",
+      "sensor_model": "MAX30102"
+    }
+  ]
+}
+
+### Get Metrics - Unauthorized (Non-admin)
+# Test accessing metrics without admin privileges
+GET http://localhost:8000/api/v1/metrics/
+Authorization: Bearer {{access_token}}
+
+### Get Metric - Non-existent ID
+# Test getting a metric that doesn't exist
+GET http://localhost:8000/api/v1/metrics/00000000-0000-0000-0000-000000000000
+Authorization: Bearer {{access_token}}
+
+### Delete Metric - Unauthorized (Non-admin)
+# Test deleting a metric without admin privileges
+DELETE http://localhost:8000/api/v1/metrics/09486832-ea3b-400d-b93f-705277874c8c
+Authorization: Bearer {{access_token}}
+
+### Create Metrics Batch - Empty Array
+# Test submitting empty metrics array
+POST http://localhost:8000/api/v1/metrics/batch/
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+{
+  "metrics": []
+}
+
+### Get Metrics Summary
+# Get aggregated metrics summary with statistics
+# Query Parameters:
+# - metric_type: Filter by metric type (heart_rate, spo2, steps, sleep, temperature)
+# - start_date: Start date for summary period (ISO format)
+# - end_date: End date for summary period (ISO format)
+# Response includes: count, average, min, max, standard deviation for each metric type
+GET http://localhost:8000/api/v1/metrics/summary?metric_type=heart_rate&start_date=2025-11-20T00:00:00Z&end_date=2025-11-25T23:59:59Z
+Authorization: Bearer {{access_token}}
+
+# Example Response:
+# {
+#   "heart_rate": {
+#     "count": 150,
+#     "average": 72.5,
+#     "min": 58,
+#     "max": 95,
+#     "std_dev": 8.2
+#   }
+# }
+
+### Get Health Prediction
+# Get health predictions based on SpO2, heart rate, and body temperature metrics
+# Query Parameters:
+# - spo2: Optional SpO2 value in percentage (0-100)
+# - heart_rate: Optional heart rate in beats per minute
+# - body_temperature: Optional body temperature in Celsius
+# - include_metrics: Include raw metrics in response (true/false)
+# - prediction_horizon_hours: Hours to predict ahead (1-168, default: 24)
+GET http://localhost:8000/api/v1/metrics/health-prediction?spo2=98.5&heart_rate=72&body_temperature=36.5&include_metrics=true&prediction_horizon_hours=24
+Authorization: Bearer {{access_token}}
+
+# Example Response - Normal Health (prediction_result: 0):
+# {
+#   "user_id": "9aaec34c-ed1f-43d6-9a1f-78199e054227",
+#   "prediction_timestamp": "2025-11-23T13:51:44.308Z",
+#   "prediction_result": 0,
+#   "health_risk_level": "low",
+#   "confidence_score": 1.0,
+#   "metric_averages": [
+#     {
+#       "metric_type": "spo2",
+#       "average_value": 98.5,
+#       "unit": "%",
+#       "data_points": 1,
+#       "is_healthy": true,
+#       "health_score": 1.0
+#     },
+#     {
+#       "metric_type": "heart_rate",
+#       "average_value": 72.0,
+#       "unit": "bpm",
+#       "data_points": 1,
+#       "is_healthy": true,
+#       "health_score": 1.0
+#     },
+#     {
+#       "metric_type": "body_temperature",
+#       "average_value": 36.5,
+#       "unit": "°C",
+#       "data_points": 1,
+#       "is_healthy": true,
+#       "health_score": 1.0
+#     }
+#   ],
+#   "risk_factors": [],
+#   "recommendations": [
+#     "All health parameters are within normal ranges. Continue monitoring."
+#   ],
+#   "raw_metrics_summary": null,
+#   "model_version": "v3.0.0-multi-parameter",
+#   "prediction_horizon_hours": 24
+# }
+
+### Get Metrics Summary - Multiple Metrics
+# Get summary for multiple metric types
+GET http://localhost:8000/api/v1/metrics/summary?metric_type=heart_rate,spo2,steps&start_date=2025-11-20T00:00:00Z&end_date=2025-11-22T23:59:59Z
+Authorization: Bearer {{access_token}}
+
+# Example Response:
+# {
+#   "heart_rate": {
+#     "count": 150,
+#     "average": 72.5,
+#     "min": 58,
+#     "max": 95,
+#     "std_dev": 8.2
+#   },
+#   "spo2": {
+#     "count": 120,
+#     "average": 97.8,
+#     "min": 92,
+#     "max": 99,
+#     "std_dev": 1.5
+#   },
+#   "steps": {
+#     "count": 180,
+#     "average": 45.2,
+#     "min": 0,
+#     "max": 120,
+#     "std_dev": 25.3
+#   }
+# }
+
+### Get Health Prediction - Sick Condition (prediction_result: 1)
+# Get health prediction for sick but not life-threatening condition
+GET http://localhost:8000/api/v1/metrics/health-prediction?spo2=92.5&heart_rate=110&body_temperature=37.5&include_metrics=true
+Authorization: Bearer {{access_token}}
+
+# Example Response - Sick Condition (prediction_result: 1):
+# {
+#   "user_id": "9aaec34c-ed1f-43d6-9a1f-78199e054227",
+#   "prediction_timestamp": "2025-11-23T13:51:44.308Z",
+#   "prediction_result": 1,
+#   "health_risk_level": "medium",
+#   "confidence_score": 1.0,
+#   "metric_averages": [
+#     {
+#       "metric_type": "spo2",
+#       "average_value": 92.5,
+#       "unit": "%",
+#       "data_points": 1,
+#       "is_healthy": false,
+#       "health_score": 0.5
+#     },
+#     {
+#       "metric_type": "heart_rate",
+#       "average_value": 110.0,
+#       "unit": "bpm",
+#       "data_points": 1,
+#       "is_healthy": false,
+#       "health_score": 0.5
+#     },
+#     {
+#       "metric_type": "body_temperature",
+#       "average_value": 37.5,
+#       "unit": "°C",
+#       "data_points": 1,
+#       "is_healthy": false,
+#       "health_score": 0.5
+#     }
+#   ],
+#   "risk_factors": [
+#     "Low SpO2 level (92.5%)",
+#     "High heart rate (110.0 bpm)",
+#     "High body temperature (37.5°C)"
+#   ],
+#   "recommendations": [
+#     "Monitor oxygen levels and rest",
+#     "Rest and monitor heart rate",
+#     "Rest, hydrate, and monitor temperature"
+#   ],
+#   "raw_metrics_summary": null,
+#   "model_version": "v3.0.0-multi-parameter",
+#   "prediction_horizon_hours": 24
+# }
+
+### Get Metrics Summary - All Metrics
+# Get summary for all metric types
+GET http://localhost:8000/api/v1/metrics/summary?start_date=2025-11-20T00:00:00Z&end_date=2025-11-22T23:59:59Z
+Authorization: Bearer {{access_token}}
+
+# Example Response:
+# {
+#   "heart_rate": {
+#     "count": 150,
+#     "average": 72.5,
+#     "min": 58,
+#     "max": 95,
+#     "std_dev": 8.2
+#   },
+#   "spo2": {
+#     "count": 120,
+#     "average": 97.8,
+#     "min": 92,
+#     "max": 99,
+#     "std_dev": 1.5
+#   },
+#   "steps": {
+#     "count": 180,
+#     "average": 45.2,
+#     "min": 0,
+#     "max": 120,
+#     "std_dev": 25.3
+#   },
+#   "sleep": {
+#     "count": 90,
+#     "average": 6.8,
+#     "min": 4.5,
+#     "max": 8.2,
+#     "std_dev": 1.2
+#   },
+#   "temperature": {
+#     "count": 200,
+#     "average": 36.5,
+#     "min": 35.8,
+#     "max": 37.2,
+#     "std_dev": 0.3
+#   }
+# }
+
+### Get Health Prediction - Critical Condition (prediction_result: 2)
+# Get health prediction for life-threatening condition
+GET http://localhost:8000/api/v1/metrics/health-prediction?spo2=88.0&heart_rate=130&body_temperature=39.0&include_metrics=false
+Authorization: Bearer {{access_token}}
+
+# Example Response - Critical Condition (prediction_result: 2):
+# {
+#   "user_id": "9aaec34c-ed1f-43d6-9a1f-78199e054227",
+#   "prediction_timestamp": "2025-11-23T13:51:44.308Z",
+#   "prediction_result": 2,
+#   "health_risk_level": "high",
+#   "confidence_score": 1.0,
+#   "metric_averages": [
+#     {
+#       "metric_type": "spo2",
+#       "average_value": 88.0,
+#       "unit": "%",
+#       "data_points": 1,
+#       "is_healthy": false,
+#       "health_score": 0.0
+#     },
+#     {
+#       "metric_type": "heart_rate",
+#       "average_value": 130.0,
+#       "unit": "bpm",
+#       "data_points": 1,
+#       "is_healthy": false,
+#       "health_score": 0.0
+#     },
+#     {
+#       "metric_type": "body_temperature",
+#       "average_value": 39.0,
+#       "unit": "°C",
+#       "data_points": 1,
+#       "is_healthy": false,
+#       "health_score": 0.0
+#     }
+#   ],
+#   "risk_factors": [
+#     "Low SpO2 level (88.0%)",
+#     "High heart rate (130.0 bpm)",
+#     "High body temperature (39.0°C)"
+#   ],
+#   "recommendations": [
+#     "Seek immediate medical attention for low oxygen levels",
+#     "Seek immediate medical attention for tachycardia",
+#     "Seek immediate medical attention for fever"
+#   ],
+#   "raw_metrics_summary": null,
+#   "model_version": "v3.0.0-multi-parameter",
+#   "prediction_horizon_hours": 24
+# }
+
+### Get Health Prediction - Database Data Only
+# Get health prediction using metrics from database (no explicit parameters)
+# The service will fetch the latest SpO2, heart rate, and body temperature data from the database
+GET http://localhost:8000/api/v1/metrics/health-prediction?include_metrics=true
+Authorization: Bearer {{access_token}}
+
+# Example Response - Using Database Data:
+# {
+#   "user_id": "9aaec34c-ed1f-43d6-9a1f-78199e054227",
+#   "prediction_timestamp": "2025-11-23T13:51:44.308Z",
+#   "prediction_result": 0,
+#   "health_risk_level": "low",
+#   "confidence_score": 0.67,
+#   "metric_averages": [
+#     {
+#       "metric_type": "spo2",
+#       "average_value": 97.2,
+#       "unit": "%",
+#       "data_points": 12,
+#       "is_healthy": true,
+#       "health_score": 1.0
+#     },
+#     {
+#       "metric_type": "heart_rate",
+#       "average_value": 68.5,
+#       "unit": "bpm",
+#       "data_points": 15,
+#       "is_healthy": true,
+#       "health_score": 1.0
+#     }
+#   ],
+#   "risk_factors": [],
+#   "recommendations": [
+#     "All health parameters are within normal ranges. Continue monitoring."
+#   ],
+#   "raw_metrics_summary": {
+#     "spo2": {
+#       "count": 12,
+#       "average": 97.2,
+#       "min": 95.8,
+#       "max": 98.5
+#     },
+#     "heart_rate": {
+#       "count": 15,
+#       "average": 68.5,
+#       "min": 62,
+#       "max": 75
+#     }
+#   },
+#   "model_version": "v3.0.0-multi-parameter",
+#   "prediction_horizon_hours": 24
+# }

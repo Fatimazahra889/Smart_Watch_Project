@@ -1,0 +1,23 @@
+export default {
+  primary: '#4A90E2',
+  primaryLight: '#6BA8F0',
+  primaryDark: '#3A7BC8',
+  secondary: '#dff1ffff',
+  background: '#F8FAFB',
+  white: '#FFFFFF',
+  text: '#2C3E50',
+  textLight: '#7F8C8D',
+  textMuted: '#95A5A6',
+  success: '#2ECC71',
+  warning: '#F39C12',
+  danger: '#E74C3C',
+  cardBg: '#FFFFFF',
+  border: '#E1E8ED',
+  shadow: '#000000',
+  gradient: {
+    start: '#4A90E2',
+    end: '#6BA8F0',
+  },
+  heart: '#FF6B9D',
+  heartPulse: '#FF8FB3',
+};

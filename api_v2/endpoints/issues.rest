@@ -1,0 +1,81 @@
+# Issue Management Endpoints
+# Base URL: http://localhost:8000/api/v1
+# Requires: Bearer token authentication
+
+### Create New Issue
+# Create a new issue for the current user
+POST http://localhost:8000/api/v1/issues/
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+{
+  "title": "Device not connecting to mobile app",
+  "description": "The bracelet fails to pair with the mobile application. Tried restarting both devices but issue persists."
+}
+
+### Get All Issues
+# Retrieve all issues (with pagination)
+GET http://localhost:8000/api/v1/issues/?skip=0&limit=100
+Authorization: Bearer {{access_token}}
+
+### Get Issue by ID
+# Get a specific issue by its UUID
+GET http://localhost:8000/api/v1/issues/{{issue_id}}
+Authorization: Bearer {{access_token}}
+
+### Update Issue
+# Update issue information (partial update supported)
+PUT http://localhost:8000/api/v1/issues/{{issue_id}}
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+{
+  "title": "Device connectivity issue - UPDATED",
+  "description": "Additional details: The issue occurs specifically when Bluetooth is enabled on the phone. Works fine with other devices."
+}
+
+### Delete Issue
+# Delete an issue (soft delete, requires ownership or admin privileges)
+DELETE http://localhost:8000/api/v1/issues/{{issue_id}}
+Authorization: Bearer {{access_token}}
+
+### Create Issue - Minimal Data
+# Test creating an issue with minimal required data
+POST http://localhost:8000/api/v1/issues/
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+{
+  "title": "Simple issue"
+}
+
+### Create Issue - Invalid Data
+# Test creating an issue with invalid data
+POST http://localhost:8000/api/v1/issues/
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+{
+  "title": "",
+  "description": ""
+}
+
+### Get Issue - Non-existent ID
+# Test getting an issue that doesn't exist
+GET http://localhost:8000/api/v1/issues/00000000-0000-0000-0000-000000000000
+Authorization: Bearer {{access_token}}
+
+### Update Issue - Unauthorized
+# Test updating an issue that doesn't belong to the user
+PUT http://localhost:8000/api/v1/issues/{{other_user_issue_id}}
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+{
+  "title": "Unauthorized Update Attempt"
+}
+
+### Get Issues with Pagination
+# Test pagination parameters
+GET http://localhost:8000/api/v1/issues/?skip=10&limit=5
+Authorization: Bearer {{access_token}}

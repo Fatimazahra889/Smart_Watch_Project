@@ -1,0 +1,20 @@
+[project]
+name = "bracelet-connecte"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+  "fastapi",
+  "sqlalchemy",
+  "pydantic[email]",
+  "pydantic-settings",
+  "python-jose[cryptography]",
+  "passlib==1.7.4",
+  "bcrypt==3.2.0",
+  "itsdangerous",
+  "python-multipart",
+  "alembic>=1.17.1",
+  "uvicorn>=0.38.0",
+  "psycopg2-binary",
+]

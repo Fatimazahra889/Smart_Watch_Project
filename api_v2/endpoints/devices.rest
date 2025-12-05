@@ -1,0 +1,75 @@
+# Device Management Endpoints
+# Base URL: http://localhost:8000/api/v1
+# Requires: Bearer token authentication for user endpoints
+
+@access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NjM3NDk5MzIsInN1YiI6IjFhOTYwZjYyLTdmZjctNDhiNC1hMTdhLWE2MGM3OGZkMjgxNCJ9.0hzLamYiB4WnxdbdjN9Un2vhq-2KYqgoHtx00CpKSvQ
+
+### Register New Device
+# Register a new device for the current user
+POST http://localhost:8000/api/v1/devices/register
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+{
+  "name": "My Smart Bracelet",
+  "serial_number": "BRACELET-111001",
+  "model": "B-1"
+}
+
+### Get All Devices
+# Retrieve all devices for the current user (with pagination)
+GET http://localhost:8000/api/v1/devices/?skip=0&limit=100
+Authorization: Bearer {{access_token}}
+
+### Get Device by ID
+# Get a specific device by its UUID
+GET http://localhost:8000/api/v1/devices/{{device_id}}
+Authorization: Bearer {{access_token}}
+
+### Update Device
+# Update device information (partial update supported)
+PUT http://localhost:8000/api/v1/devices/{{device_id}}
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+{
+  "name": "My Bracelet v2",
+  "model": "B-1-Enhanced"
+}
+
+### Delete Device
+# Delete a device (requires ownership or admin privileges)
+DELETE http://localhost:8000/api/v1/devices/{{device_id}}
+Authorization: Bearer {{access_token}}
+
+### Get Device Metrics
+# Get all metrics for a specific device
+GET http://localhost:8000/api/v1/devices/{{device_id}}/metrics
+Authorization: Bearer {{access_token}}
+
+### Register Device - Invalid Data
+# Test device registration with invalid data
+POST http://localhost:8000/api/v1/devices/register
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+{
+  "name": "",
+  "serial_number": "",
+  "model": ""
+}
+
+### Get Device - Non-existent ID
+# Test getting a device that doesn't exist
+GET http://localhost:8000/api/v1/devices/00000000-0000-0000-0000-000000000000
+Authorization: Bearer {{access_token}}
+
+### Update Device - Unauthorized
+# Test updating a device that doesn't belong to the user
+PUT http://localhost:8000/api/v1/devices/{{other_user_device_id}}
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+{
+  "name": "Unauthorized Update"
+}

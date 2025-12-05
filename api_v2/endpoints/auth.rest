@@ -1,0 +1,95 @@
+# JWT Authentication Flow Test
+# Base URL: http://localhost:8000/api/v1/auth
+
+### Test 1: Register a new user
+POST http://localhost:8000/api/v1/auth/register
+Content-Type: application/json
+
+{
+  "name": "Test User",
+  "email": "youssef.elaimari2020@gmail.com",
+  "password": "TestPass123!"
+}
+
+###
+GET http://localhost:8000/api/v1/auth/me
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NjM4OTk0NjQsInN1YiI6ImE3OWM1YzdlLTJhY2QtNDg2NS1hM2M4LTZjYTIyNTkwYzNiMSIsImp0aSI6IjU5YzA4ODJiLTc0NDEtNDg5NS04NDAxLTdmNmY5YzA4NzhiNSJ9.sevEaPNNAfpsRaReDMaj4p8mnj_ffe4TVyD6UXGtBHw
+
+### Test 2: Verify email with verification code
+POST http://localhost:8000/api/v1/auth/verify-email
+Content-Type: application/json
+
+{                       
+  "email": "youssef.elaimari@gmail.com",
+  "verification_code": "728547                                                                                                                                                                                                                        "
+}
+
+### Test 3: Login with verified credentials
+POST http://localhost:8000/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "youssef.elaimari@gmail.com",
+  "password": "TestPass123!"
+}
+
+### Test 4: Resend verification code
+POST http://localhost:8000/api/v1/auth/resend-code
+Content-Type: application/json
+
+{
+  "email": "youssef.elaimari@gmail.com"
+}
+
+### Test 5: Logout
+POST http://localhost:8000/api/v1/auth/logout
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NjM4OTk0NjQsInN1YiI6ImE3OWM1YzdlLTJhY2QtNDg2NS1hM2M4LTZjYTIyNTkwYzNiMSIsImp0aSI6IjU5YzA4ODJiLTc0NDEtNDg5NS04NDAxLTdmNmY5YzA4NzhiNSJ9.sevEaPNNAfpsRaReDMaj4p8mnj_ffe4TVyD6UXGtBHw
+
+### Test 6: Register with duplicate email (should fail)
+POST http://localhost:8000/api/v1/auth/register
+Content-Type: application/json
+
+{
+  "name": "Another User",
+  "email": "youssef.elaimari@gmail.com",
+  "password": "AnotherPass123!"
+}
+
+### Test 7: Login with invalid password (should fail)
+POST http://localhost:8000/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "testuser@example.com",
+  "password": "WrongPassword123!"
+}
+
+### Test 8: Login with non-existent email (should fail)
+POST http://localhost:8000/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "nonexistent@example.com",
+  "password": "SomePassword123!"
+}
+
+### Test 9: Verify email with invalid code (should fail)
+POST http://localhost:8000/api/v1/auth/verify-email
+Content-Type: application/json
+
+{
+  "email": "youssef.elaimari@gmail.com",
+  "verification_code": "999999"
+}
+
+### Test 10: Register with weak password (should fail)
+POST http://localhost:8000/api/v1/auth/register
+Content-Type: application/json
+
+{
+  "name": "Weak User",
+  "email": "weakuser@example.com",
+  "password": "weak"
+}
